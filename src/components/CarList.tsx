@@ -1,10 +1,11 @@
 import { useEffect, useState  } from "react";
-import type { CarData } from "../types";
+import type { CarData, Car } from "../types";
 import type { GridColDef, GridRenderCellParams } from '@mui/x-data-grid';
 import { DataGrid } from "@mui/x-data-grid";
 import Button from "@mui/material/Button";
 import Stack from "@mui/material/Stack";
 import AddCar from "./AddCar";
+import EditCar from "./EditCar";
 
 function CarList() {
   const [cars, setCars] = useState<CarData[]>([]);
@@ -26,6 +27,14 @@ function CarList() {
         <Button color="error" size="small" onClick={() => handleDelete(params.id as string)}>
           DELETE
         </Button>
+    },
+    {
+      field: "_links.car.href",
+      headerName: "",
+      sortable: false,
+      disableColumnMenu: false,
+      renderCell: (params: GridRenderCellParams) =>
+        <EditCar />
     }
   ]
 
@@ -56,6 +65,24 @@ function CarList() {
       .catch(err => console.error(err))
     }
   }
+
+  const handleAdd = (car: Car) => {
+    fetch(import.meta.env.VITE_API_URL + "/cars", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify(car)
+    })
+    .then(response => {
+      if (!response.ok)
+          throw new Error("Error when adding a new car");
+      
+      return response.json();
+    })
+    .then(() => getCars())
+    .catch(err => console.error(err))
+  }
  
   useEffect(() => {
     getCars();
@@ -64,7 +91,7 @@ function CarList() {
   return(
     <>
       <Stack sx={{ mt: 2, mb: 2 }} direction="row" >
-        <AddCar />
+        <AddCar handleAdd={handleAdd} />
       </Stack>
       <div style={{ width: "95%", height: 500, margin: "auto" }}>
         <DataGrid 

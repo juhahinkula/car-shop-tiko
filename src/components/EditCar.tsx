@@ -7,11 +7,7 @@ import DialogContent from '@mui/material/DialogContent';
 import DialogTitle from '@mui/material/DialogTitle';
 import type { Car } from '../types';
 
-type AddCarProps = {
-  handleAdd: (car: Car) => void;
-}
-
-export default function AddCar(props: AddCarProps) {
+export default function EditCar() {
   const [open, setOpen] = useState(false);
   const [car, setCar] = useState<Car>({
     brand: "",
@@ -31,17 +27,16 @@ export default function AddCar(props: AddCarProps) {
   };
 
   const handleSubmit = () => {
-    props.handleAdd(car);
     handleClose();
   };
 
   return (
     <>
-      <Button variant="outlined" onClick={handleClickOpen}>
-        Add Car
+      <Button size="small" onClick={handleClickOpen}>
+        EDIT
       </Button>
       <Dialog open={open} onClose={handleClose}>
-        <DialogTitle>New Car</DialogTitle>
+        <DialogTitle>Edit Car</DialogTitle>
         <DialogContent>
             <TextField
               required
