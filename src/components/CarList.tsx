@@ -6,9 +6,13 @@ import Button from "@mui/material/Button";
 import Stack from "@mui/material/Stack";
 import AddCar from "./AddCar";
 import EditCar from "./EditCar";
+import Snackbar from "@mui/material/Snackbar";
+import { fetchCar, saveCar } from "../carapi";
+
 
 function CarList() {
   const [cars, setCars] = useState<CarData[]>([]);
+  const [open, setOpen] = useState(false);
 
   const columns: GridColDef[] = [
     { field: "brand", width: 200, headerName: "Brand"},
@@ -34,18 +38,12 @@ function CarList() {
       sortable: false,
       disableColumnMenu: false,
       renderCell: (params: GridRenderCellParams) =>
-        <EditCar />
+        <EditCar car={params.row} handleUpdate={handleUpdate} />
     }
   ]
 
   const getCars = () => {
-    fetch(import.meta.env.VITE_API_URL +  "/cars")
-    .then(response => {
-      if (!response.ok)
-        throw new Error("Error when fetching cars");
-
-      return response.json();
-    })
+    fetchCar()
     .then(data => setCars(data._embedded.cars))
     .catch(err => console.error(err));
   }
@@ -61,28 +59,37 @@ function CarList() {
 
         return response.json();
       })
-      .then(() => getCars())
+      .then(() => { 
+        getCars();
+        setOpen(true) 
+      })
       .catch(err => console.error(err))
     }
   }
 
   const handleAdd = (car: Car) => {
-    fetch(import.meta.env.VITE_API_URL + "/cars", {
-      method: "POST",
+    saveCar(car)
+    .then(() => getCars())
+    .catch(err => console.error(err))
+  }
+
+  const handleUpdate = (url: string, updatedCar: Car) => {
+    fetch(url, {
+      method: "PUT",
       headers: {
         "Content-Type": "application/json"
       },
-      body: JSON.stringify(car)
+      body: JSON.stringify(updatedCar)
     })
     .then(response => {
       if (!response.ok)
-          throw new Error("Error when adding a new car");
-      
+        throw new Error("Error when editing a car");
+
       return response.json();
     })
     .then(() => getCars())
     .catch(err => console.error(err))
-  }
+  } 
  
   useEffect(() => {
     getCars();
@@ -102,6 +109,12 @@ function CarList() {
           rowSelection={false}
         />
       </div>
+      <Snackbar 
+        open={open}
+        autoHideDuration={3000}
+        onClose={() => setOpen(false)}
+        message="Car deleted succesfully"
+      />
     </>
   );
 }
